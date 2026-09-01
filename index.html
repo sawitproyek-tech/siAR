@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AR Edukasi Anak</title>
+    <title>AR Edukasi Anak (MindAR)</title>
 
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,13 +11,13 @@
     <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
-    <!-- AR.js Marker Tracking -->
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.8/aframe/build/aframe-ar.js"></script>
+    <!-- MindAR Image Tracking untuk A-Frame -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-        /* Paksa latar belakang menjadi hitam & kunci halaman dari scroll */
+        /* Pengaturan Dasar SPA */
         html, body {
-            background-color: #000 !important;
+            background-color: #000;
             margin: 0;
             padding: 0;
             width: 100%;
@@ -26,37 +26,9 @@
             position: fixed; 
         }
 
-        /* 1. Membasmi total tombol VR dan bungkus hitamnya bawaan A-Frame */
+        /* Membasmi elemen VR bawaan A-Frame */
         .a-enter-vr, .a-enter-ar, .a-orientation-modal {
             display: none !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-        }
-
-        /* 2. Mengunci video agar tidak tergeser margin buatan AR.js dan menutupi layar penuh */
-        #arjs-video {
-            width: 100vw !important;
-            height: 100vh !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            top: 0 !important;
-            left: 0 !important;
-            position: absolute !important;
-            object-fit: cover !important;
-            transform: none !important; 
-        }
-
-        .a-canvas {
-            width: 100vw !important;
-            height: 100vh !important;
-            min-width: 100vw !important;
-            min-height: 100vh !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            top: 0 !important;
-            left: 0 !important;
-            position: absolute !important;
-            object-fit: cover !important;
         }
 
         /* UI aplikasi */
@@ -117,7 +89,7 @@
             width: 45px;
             height: 45px;
             border: 4px solid rgba(255,255,255,.3);
-            border-top-color: white;
+            border-top-color: transparent;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-bottom: 15px;
@@ -131,41 +103,43 @@
 <body>
 
 <!-- ======================================================
-     AR SCENE
+     AR SCENE (MindAR)
 ======================================================= -->
+<!-- autoStart: false mencegah kamera menyala otomatis sebelum tombol diklik -->
 <a-scene 
-    id="ar-scene" 
-    embedded 
-    device-orientation-permission-ui="enabled: false"
-    vr-mode-ui="enabled: false" 
-    renderer="antialias: true; alpha: true;" 
-    arjs="sourceType: webcam; sourceWidth:1280; sourceHeight:960; displayWidth: 1280; displayHeight: 960; trackingMethod: best; debugUIEnabled: false;">
+    id="ar-scene"
+    mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind; autoStart: false; uiLoading: no; uiScanning: no;" 
+    color-space="sRGB"
+    renderer="colorManagement: true, physicallyCorrectLights"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
     
-    <!-- Marker Hiro -->
-    <a-marker id="hiro-marker" preset="hiro">
+    <!-- Kamera Khusus MindAR -->
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <!-- Target Gambar (Menggantikan Marker Hiro) -->
+    <a-entity id="target-image" mindar-image-target="targetIndex: 0">
         <!-- Kubus -->
         <a-box 
-            position="0 0.5 0" 
+            position="0 0 0" 
             material="color: #6366f1; opacity: 1;" 
             animation="property: rotation; to: 0 360 0; loop: true; dur: 3000; easing: linear;">
         </a-box>
         <!-- Huruf A -->
         <a-text 
             value="A" 
-            position="0 1.3 0" 
+            position="0 0.8 0" 
             align="center" 
             color="#ffffff" 
             width="3">
         </a-text>
-    </a-marker>
+    </a-entity>
     
-    <!-- Camera -->
-    <a-entity camera></a-entity>
 </a-scene>
 
 
 <!-- ======================================================
-     APPLICATION
+     APPLICATION UI
 ======================================================= -->
 <div id="app">
 
@@ -174,31 +148,19 @@
         <header class="bg-indigo-600 text-white text-center p-5 shadow-lg">
             <div class="text-4xl mb-2">✨</div>
             <h1 class="text-2xl font-bold">AR Edukasi Anak</h1>
-            <p class="text-indigo-100 text-sm mt-1">Belajar dengan Augmented Reality</p>
+            <p class="text-indigo-100 text-sm mt-1">Teknologi MindAR - Portrait Mode</p>
         </header>
 
         <main class="max-w-md mx-auto px-5 pt-8">
             <div class="bg-white rounded-3xl shadow-xl p-6">
                 <div class="w-24 h-24 mx-auto bg-indigo-100 rounded-3xl flex items-center justify-center text-5xl mb-6">🔤</div>
                 <h2 class="text-2xl font-bold text-center text-slate-800">Belajar Abjad 3D</h2>
-                <p class="text-center text-sm text-slate-500 mt-3 leading-relaxed">Arahkan kamera ke marker <strong>Hiro</strong> untuk melihat objek 3D.</p>
-
-                <!-- Instructions -->
-                <div class="bg-indigo-50 rounded-2xl p-4 mt-6">
-                    <p class="font-bold text-indigo-900 text-sm mb-3">📌 Cara menggunakan</p>
-                    <div class="text-sm text-indigo-800 space-y-2">
-                        <p>1️⃣ Siapkan marker Hiro.</p>
-                        <p>2️⃣ Tekan Mulai Scan AR.</p>
-                        <p>3️⃣ Izinkan kamera.</p>
-                        <p>4️⃣ Arahkan kamera ke marker.</p>
-                    </div>
-                </div>
+                <p class="text-center text-sm text-slate-500 mt-3 leading-relaxed">Arahkan kamera ke gambar sampel MindAR untuk melihat objek 3D secara penuh.</p>
 
                 <!-- Start Button -->
                 <button id="startAR" class="clickable w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold shadow-lg active:scale-95 transition">
                     🚀 Mulai Scan AR
                 </button>
-                <p class="text-center text-xs text-slate-400 mt-4">🔒 Kamera membutuhkan izin browser.</p>
             </div>
         </main>
     </section>
@@ -207,7 +169,7 @@
     <section id="ar-control">
         <!-- Status -->
         <div class="text-center">
-            <span id="status" class="inline-block bg-white/95 px-5 py-3 rounded-full shadow-xl text-sm font-bold text-slate-800">📷 Arahkan ke marker Hiro</span>
+            <span id="status" class="inline-block bg-white/95 px-5 py-3 rounded-full shadow-xl text-sm font-bold text-slate-800">📷 Mencari gambar target...</span>
         </div>
         <!-- Close -->
         <div class="clickable w-full max-w-md mx-auto mb-2">
@@ -220,8 +182,7 @@
 <!-- LOADING -->
 <div id="loading">
     <div class="spinner"></div>
-    <p class="font-bold">Menyiapkan kamera...</p>
-    <p class="text-sm text-slate-300 mt-2">Mohon izinkan akses kamera.</p>
+    <p class="font-bold">Membuka Kamera...</p>
 </div>
 
 <!-- ======================================================
@@ -234,78 +195,54 @@
     const closeButton = document.getElementById("closeAR");
     const status = document.getElementById("status");
     const loading = document.getElementById("loading");
-    const marker = document.getElementById("hiro-marker");
+    
+    // Elemen scene dan target gambar
+    const sceneEl = document.getElementById("ar-scene");
+    const targetEl = document.getElementById("target-image");
 
     /* START AR */
     startButton.addEventListener("click", function() {
-        console.log("START AR");
-
-        // 1. Sembunyikan Home
         home.style.display = "none";
-        
-        // 2. Tampilkan Loading & Kontrol UI AR
         loading.classList.add("active");
+        
+        // Memulai mesin MindAR secara manual setelah tombol diklik
+        sceneEl.systems["mindar-image-system"].start();
+    });
+
+    /* DETEKSI SAAT MINDAR SELESAI MEMUAT KAMERA */
+    sceneEl.addEventListener("arReady", function() {
+        loading.classList.remove("active");
         arControl.classList.add("active");
-
-        // 3. Paksa resize berulang selama 2 detik agar AR.js mengisi layar penuh
-        let resizeInterval = setInterval(function() {
-            window.dispatchEvent(new Event('resize'));
-        }, 250);
-
-        setTimeout(function() {
-            clearInterval(resizeInterval);
-        }, 2000);
-
-        // 4. Inisialisasi putar video otomatis di browser HP
-        setTimeout(function() {
-            loading.classList.remove("active");
-
-            const video = document.getElementById("arjs-video");
-            if (video) {
-                console.log("ARJS VIDEO FOUND");
-                video.setAttribute("playsinline", "");
-                video.setAttribute("webkit-playsinline", "");
-                video.setAttribute("autoplay", "");
-                video.muted = true;
-
-                const playPromise = video.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(function(error) {
-                        console.error("Video play error:", error);
-                    });
-                }
-            } else {
-                console.error("ARJS VIDEO TIDAK DITEMUKAN");
-            }
-        }, 1500);
     });
 
     /* CLOSE AR */
     closeButton.addEventListener("click", function() {
         arControl.classList.remove("active");
         home.style.display = "block";
+        
+        // Menghentikan kamera untuk menghemat baterai saat kembali ke menu
+        sceneEl.systems["mindar-image-system"].stop();
     });
 
-    /* MARKER FOUND */
-    marker.addEventListener("markerFound", function() {
-        console.log("HIRO FOUND");
-        status.textContent = "🎉 Marker Hiro ditemukan!";
+    /* TARGET FOUND (Pengganti markerFound) */
+    targetEl.addEventListener("targetFound", function() {
+        status.textContent = "🎉 Gambar ditemukan!";
         status.classList.remove("text-slate-800");
         status.classList.add("text-green-700");
     });
 
-    /* MARKER LOST */
-    marker.addEventListener("markerLost", function() {
-        status.textContent = "📷 Arahkan ke marker Hiro";
+    /* TARGET LOST (Pengganti markerLost) */
+    targetEl.addEventListener("targetLost", function() {
+        status.textContent = "📷 Mencari gambar target...";
         status.classList.remove("text-green-700");
         status.classList.add("text-slate-800");
     });
 
-    /* CAMERA ERROR HANDLER */
-    window.addEventListener("camera-error", function(event) {
-        console.error("CAMERA ERROR", event);
+    /* ERROR CAMERA */
+    sceneEl.addEventListener("arError", function() {
         loading.classList.remove("active");
-        alert("Gagal memuat kamera. Pastikan browser sudah diizinkan mengakses kamera.");
+        alert("Gagal memuat kamera. Pastikan izin kamera telah diberikan.");
+        home.style.display = "block";
     });
 </script>
 
