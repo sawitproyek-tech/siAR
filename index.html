@@ -15,14 +15,29 @@
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.8/aframe/build/aframe-ar.js"></script>
 
     <style>
-        /* Mengunci halaman agar tidak bisa digeser/scroll */
+        /* Paksa latar belakang menjadi hitam & kunci halaman dari scroll */
         html, body {
+            background-color: #000 !important;
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
             overflow: hidden; 
             position: fixed; 
+        }
+
+        /* Menimpa kalkulasi error dari AR.js agar kamera selalu full screen */
+        #arjs-video, .a-canvas {
+            width: 100vw !important;
+            height: 100vh !important;
+            min-width: 100vw !important;
+            min-height: 100vh !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            top: 0 !important;
+            left: 0 !important;
+            position: absolute !important;
+            object-fit: cover !important;
         }
 
         /* UI aplikasi */
@@ -102,6 +117,7 @@
 <a-scene 
     id="ar-scene" 
     embedded 
+    device-orientation-permission-ui="enabled: false"
     vr-mode-ui="enabled: false" 
     renderer="antialias: true; alpha: true;" 
     arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;">
@@ -212,10 +228,14 @@
         loading.classList.add("active");
         arControl.classList.add("active");
 
-        // 3. Paksa render ulang (resize) agar AR.js membaca layar yang sudah kosong dan melebarkan kameranya
-        setTimeout(function() {
+        // 3. Paksa resize berulang selama 2 detik agar AR.js mengisi layar penuh
+        let resizeInterval = setInterval(function() {
             window.dispatchEvent(new Event('resize'));
-        }, 500);
+        }, 250);
+
+        setTimeout(function() {
+            clearInterval(resizeInterval);
+        }, 2000);
 
         // 4. Inisialisasi putar video otomatis di browser HP
         setTimeout(function() {
