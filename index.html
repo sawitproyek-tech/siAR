@@ -1,976 +1,274 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AR Edukasi Anak</title>
-
 
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-
     <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-
 
     <!-- AR.js Marker Tracking -->
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.8/aframe/build/aframe-ar.js"></script>
 
-
     <style>
-
-        html,
-        body {
-
+        /* Mengunci halaman agar tidak bisa digeser/scroll */
+        html, body {
             margin: 0;
-
             padding: 0;
-
             width: 100%;
-
             height: 100%;
-
-            overflow: hidden;
-
+            overflow: hidden; 
+            position: fixed; 
         }
 
-
-        /*
-         * PENTING:
-         * Jangan paksa video AR.js dengan z-index negatif.
-         */
-
-        .a-canvas {
-
-            position: absolute !important;
-
-            top: 0 !important;
-
-            left: 0 !important;
-
-        }
-
-
-        /*
-         * AR.js menggunakan element dengan id:
-         * #arjs-video
-         */
-
-        #arjs-video {
-
-            position: absolute !important;
-
-            top: 0 !important;
-
-            left: 0 !important;
-
-            width: 100% !important;
-
-            height: 100% !important;
-
-            object-fit: cover !important;
-
-        }
-
-
-        /*
-         * UI aplikasi
-         */
-
+        /* UI aplikasi */
         #app {
-
             position: fixed;
-
             inset: 0;
-
             z-index: 999;
-
             pointer-events: none;
-
         }
-
 
         .clickable {
-
             pointer-events: auto;
-
         }
 
-
-        /*
-         * Home
-         */
-
+        /* Home */
         #home {
-
             position: fixed;
-
             inset: 0;
-
             z-index: 1000;
-
             background: #f8fafc;
-
             overflow-y: auto;
-
         }
 
-
-        /*
-         * AR Control
-         */
-
+        /* AR Control */
         #ar-control {
-
             display: none;
-
             position: fixed;
-
             inset: 0;
-
             z-index: 1001;
-
             pointer-events: none;
-
             flex-direction: column;
-
             justify-content: space-between;
-
             padding: 20px;
-
         }
-
 
         #ar-control.active {
-
             display: flex;
-
         }
 
-
-        /*
-         * Loading
-         */
-
+        /* Loading */
         #loading {
-
             display: none;
-
             position: fixed;
-
             inset: 0;
-
             z-index: 2000;
-
             background: rgba(0,0,0,.85);
-
             color: white;
-
             align-items: center;
-
             justify-content: center;
-
             flex-direction: column;
-
         }
-
 
         #loading.active {
-
             display: flex;
-
         }
-
 
         .spinner {
-
             width: 45px;
-
             height: 45px;
-
             border: 4px solid rgba(255,255,255,.3);
-
             border-top-color: white;
-
             border-radius: 50%;
-
             animation: spin 1s linear infinite;
-
             margin-bottom: 15px;
-
         }
-
 
         @keyframes spin {
-
-            to {
-
-                transform: rotate(360deg);
-
-            }
-
+            to { transform: rotate(360deg); }
         }
-
     </style>
-
 </head>
-
-
-
 <body>
-
 
 <!-- ======================================================
      AR SCENE
 ======================================================= -->
-
-<a-scene
-
-    id="ar-scene"
-
-    embedded
-
-    vr-mode-ui="enabled: false"
-
-    renderer="
-        antialias: true;
-        alpha: true;
-    "
-
-    arjs="
-        sourceType: webcam;
-        trackingMethod: best;
-        debugUIEnabled: false;
-    "
->
-
-
+<a-scene 
+    id="ar-scene" 
+    embedded 
+    vr-mode-ui="enabled: false" 
+    renderer="antialias: true; alpha: true;" 
+    arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;">
+    
     <!-- Marker Hiro -->
-
-    <a-marker
-        id="hiro-marker"
-        preset="hiro"
-    >
-
-
+    <a-marker id="hiro-marker" preset="hiro">
         <!-- Kubus -->
-
-        <a-box
-
-            position="0 0.5 0"
-
-            material="
-                color: #6366f1;
-                opacity: 1;
-            "
-
-            animation="
-                property: rotation;
-                to: 0 360 0;
-                loop: true;
-                dur: 3000;
-                easing: linear;
-            "
-
-        ></a-box>
-
-
+        <a-box 
+            position="0 0.5 0" 
+            material="color: #6366f1; opacity: 1;" 
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 3000; easing: linear;">
+        </a-box>
         <!-- Huruf A -->
-
-        <a-text
-
-            value="A"
-
-            position="0 1.3 0"
-
-            align="center"
-
-            color="#ffffff"
-
-            width="3"
-
-        ></a-text>
-
-
+        <a-text 
+            value="A" 
+            position="0 1.3 0" 
+            align="center" 
+            color="#ffffff" 
+            width="3">
+        </a-text>
     </a-marker>
-
-
+    
     <!-- Camera -->
-
     <a-entity camera></a-entity>
-
-
 </a-scene>
-
 
 
 <!-- ======================================================
      APPLICATION
 ======================================================= -->
-
 <div id="app">
 
-
-    <!-- ==================================================
-         HOME
-    =================================================== -->
-
+    <!-- HOME -->
     <section id="home">
-
-
-        <header
-            class="
-                bg-indigo-600
-                text-white
-                text-center
-                p-5
-                shadow-lg
-            "
-        >
-
-            <div class="text-4xl mb-2">
-                ✨
-            </div>
-
-            <h1 class="text-2xl font-bold">
-
-                AR Edukasi Anak
-
-            </h1>
-
-            <p class="text-indigo-100 text-sm mt-1">
-
-                Belajar dengan Augmented Reality
-
-            </p>
-
+        <header class="bg-indigo-600 text-white text-center p-5 shadow-lg">
+            <div class="text-4xl mb-2">✨</div>
+            <h1 class="text-2xl font-bold">AR Edukasi Anak</h1>
+            <p class="text-indigo-100 text-sm mt-1">Belajar dengan Augmented Reality</p>
         </header>
 
-
-
-        <main
-            class="
-                max-w-md
-                mx-auto
-                px-5
-                pt-8
-            "
-        >
-
-
-            <div
-                class="
-                    bg-white
-                    rounded-3xl
-                    shadow-xl
-                    p-6
-                "
-            >
-
-
-                <div
-                    class="
-                        w-24
-                        h-24
-                        mx-auto
-                        bg-indigo-100
-                        rounded-3xl
-                        flex
-                        items-center
-                        justify-center
-                        text-5xl
-                        mb-6
-                    "
-                >
-
-                    🔤
-
-                </div>
-
-
-                <h2
-                    class="
-                        text-2xl
-                        font-bold
-                        text-center
-                        text-slate-800
-                    "
-                >
-
-                    Belajar Abjad 3D
-
-                </h2>
-
-
-                <p
-                    class="
-                        text-center
-                        text-sm
-                        text-slate-500
-                        mt-3
-                        leading-relaxed
-                    "
-                >
-
-                    Arahkan kamera ke marker
-                    <strong>Hiro</strong>
-                    untuk melihat objek 3D.
-
-                </p>
-
+        <main class="max-w-md mx-auto px-5 pt-8">
+            <div class="bg-white rounded-3xl shadow-xl p-6">
+                <div class="w-24 h-24 mx-auto bg-indigo-100 rounded-3xl flex items-center justify-center text-5xl mb-6">🔤</div>
+                <h2 class="text-2xl font-bold text-center text-slate-800">Belajar Abjad 3D</h2>
+                <p class="text-center text-sm text-slate-500 mt-3 leading-relaxed">Arahkan kamera ke marker <strong>Hiro</strong> untuk melihat objek 3D.</p>
 
                 <!-- Instructions -->
-
-                <div
-                    class="
-                        bg-indigo-50
-                        rounded-2xl
-                        p-4
-                        mt-6
-                    "
-                >
-
-                    <p
-                        class="
-                            font-bold
-                            text-indigo-900
-                            text-sm
-                            mb-3
-                        "
-                    >
-
-                        📌 Cara menggunakan
-
-                    </p>
-
-
-                    <div
-                        class="
-                            text-sm
-                            text-indigo-800
-                            space-y-2
-                        "
-                    >
-
+                <div class="bg-indigo-50 rounded-2xl p-4 mt-6">
+                    <p class="font-bold text-indigo-900 text-sm mb-3">📌 Cara menggunakan</p>
+                    <div class="text-sm text-indigo-800 space-y-2">
                         <p>1️⃣ Siapkan marker Hiro.</p>
-
                         <p>2️⃣ Tekan Mulai Scan AR.</p>
-
                         <p>3️⃣ Izinkan kamera.</p>
-
                         <p>4️⃣ Arahkan kamera ke marker.</p>
-
                     </div>
-
                 </div>
 
-
-                <!-- Start -->
-
-                <button
-                    id="startAR"
-
-                    class="
-                        clickable
-                        w-full
-                        mt-6
-                        py-4
-                        rounded-2xl
-                        bg-gradient-to-r
-                        from-indigo-500
-                        to-violet-600
-                        text-white
-                        font-bold
-                        shadow-lg
-                        active:scale-95
-                        transition
-                    "
-                >
-
+                <!-- Start Button -->
+                <button id="startAR" class="clickable w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold shadow-lg active:scale-95 transition">
                     🚀 Mulai Scan AR
-
                 </button>
-
-
-                <p
-                    class="
-                        text-center
-                        text-xs
-                        text-slate-400
-                        mt-4
-                    "
-                >
-
-                    🔒 Kamera membutuhkan izin browser.
-
-                </p>
-
-
+                <p class="text-center text-xs text-slate-400 mt-4">🔒 Kamera membutuhkan izin browser.</p>
             </div>
-
-
         </main>
-
-
     </section>
 
-
-
-    <!-- ==================================================
-         AR CONTROL
-    =================================================== -->
-
+    <!-- AR CONTROL -->
     <section id="ar-control">
-
-
         <!-- Status -->
-
         <div class="text-center">
-
-            <span
-                id="status"
-
-                class="
-                    inline-block
-                    bg-white/95
-                    px-5
-                    py-3
-                    rounded-full
-                    shadow-xl
-                    text-sm
-                    font-bold
-                    text-slate-800
-                "
-            >
-
-                📷 Arahkan ke marker Hiro
-
-            </span>
-
+            <span id="status" class="inline-block bg-white/95 px-5 py-3 rounded-full shadow-xl text-sm font-bold text-slate-800">📷 Arahkan ke marker Hiro</span>
         </div>
-
-
         <!-- Close -->
-
-        <div
-            class="
-                clickable
-                w-full
-                max-w-md
-                mx-auto
-                mb-2
-            "
-        >
-
-            <button
-                id="closeAR"
-
-                class="
-                    w-full
-                    py-4
-                    rounded-2xl
-                    bg-slate-900/90
-                    text-white
-                    font-bold
-                    shadow-xl
-                "
-            >
-
-                ✕ Tutup Kamera
-
-            </button>
-
+        <div class="clickable w-full max-w-md mx-auto mb-2">
+            <button id="closeAR" class="w-full py-4 rounded-2xl bg-slate-900/90 text-white font-bold shadow-xl">✕ Tutup Kamera</button>
         </div>
-
-
     </section>
 
-
 </div>
 
-
-
-<!-- ======================================================
-     LOADING
-======================================================= -->
-
+<!-- LOADING -->
 <div id="loading">
-
     <div class="spinner"></div>
-
-    <p class="font-bold">
-
-        Menyiapkan kamera...
-
-    </p>
-
-    <p
-        class="
-            text-sm
-            text-slate-300
-            mt-2
-        "
-    >
-
-        Mohon izinkan akses kamera.
-
-    </p>
-
+    <p class="font-bold">Menyiapkan kamera...</p>
+    <p class="text-sm text-slate-300 mt-2">Mohon izinkan akses kamera.</p>
 </div>
-
-
 
 <!-- ======================================================
      JAVASCRIPT
 ======================================================= -->
-
 <script>
+    const home = document.getElementById("home");
+    const arControl = document.getElementById("ar-control");
+    const startButton = document.getElementById("startAR");
+    const closeButton = document.getElementById("closeAR");
+    const status = document.getElementById("status");
+    const loading = document.getElementById("loading");
+    const marker = document.getElementById("hiro-marker");
 
+    /* START AR */
+    startButton.addEventListener("click", function() {
+        console.log("START AR");
 
-const home =
-    document.getElementById("home");
-
-const arControl =
-    document.getElementById("ar-control");
-
-const startButton =
-    document.getElementById("startAR");
-
-const closeButton =
-    document.getElementById("closeAR");
-
-const status =
-    document.getElementById("status");
-
-const loading =
-    document.getElementById("loading");
-
-const marker =
-    document.getElementById("hiro-marker");
-
-
-
-/* ======================================================
-   START
-======================================================= */
-
-startButton.addEventListener(
-    "click",
-    function() {
-
-        console.log(
-            "START AR"
-        );
-
-
-        /*
-         * Home disembunyikan
-         */
-
+        // 1. Sembunyikan Home
         home.style.display = "none";
+        
+        // 2. Tampilkan Loading & Kontrol UI AR
+        loading.classList.add("active");
+        arControl.classList.add("active");
 
+        // 3. Paksa render ulang (resize) agar AR.js membaca layar yang sudah kosong dan melebarkan kameranya
+        setTimeout(function() {
+            window.dispatchEvent(new Event('resize'));
+        }, 500);
 
-        /*
-         * Loading
-         */
+        // 4. Inisialisasi putar video otomatis di browser HP
+        setTimeout(function() {
+            loading.classList.remove("active");
 
-        loading.classList.add(
-            "active"
-        );
+            const video = document.getElementById("arjs-video");
+            if (video) {
+                console.log("ARJS VIDEO FOUND");
+                video.setAttribute("playsinline", "");
+                video.setAttribute("webkit-playsinline", "");
+                video.setAttribute("autoplay", "");
+                video.muted = true;
 
-
-        /*
-         * AR UI
-         */
-
-        arControl.classList.add(
-            "active"
-        );
-
-
-        /*
-         * Beri waktu AR.js membuat kamera
-         */
-
-        setTimeout(
-            function() {
-
-                loading.classList.remove(
-                    "active"
-                );
-
-                /*
-                 * Pastikan video AR.js terlihat
-                 */
-
-                const video =
-                    document.getElementById(
-                        "arjs-video"
-                    );
-
-                if (video) {
-
-                    console.log(
-                        "ARJS VIDEO FOUND"
-                    );
-
-                    console.log(
-                        "Video width:",
-                        video.videoWidth
-                    );
-
-                    console.log(
-                        "Video height:",
-                        video.videoHeight
-                    );
-
-
-                    /*
-                     * Mobile Safari / Chrome
-                     */
-
-                    video.setAttribute(
-                        "playsinline",
-                        ""
-                    );
-
-                    video.setAttribute(
-                        "webkit-playsinline",
-                        ""
-                    );
-
-                    video.setAttribute(
-                        "autoplay",
-                        ""
-                    );
-
-
-                    video.muted = true;
-
-
-                    /*
-                     * Paksa play
-                     */
-
-                    const playPromise =
-                        video.play();
-
-
-                    if (
-                        playPromise !== undefined
-                    ) {
-
-                        playPromise.catch(
-                            function(error) {
-
-                                console.error(
-                                    "Video play error:",
-                                    error
-                                );
-
-                            }
-                        );
-
-                    }
-
+                const playPromise = video.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(function(error) {
+                        console.error("Video play error:", error);
+                    });
                 }
-                else {
+            } else {
+                console.error("ARJS VIDEO TIDAK DITEMUKAN");
+            }
+        }, 1500);
+    });
 
-                    console.error(
-                        "ARJS VIDEO TIDAK DITEMUKAN"
-                    );
+    /* CLOSE AR */
+    closeButton.addEventListener("click", function() {
+        arControl.classList.remove("active");
+        home.style.display = "block";
+    });
 
-                }
+    /* MARKER FOUND */
+    marker.addEventListener("markerFound", function() {
+        console.log("HIRO FOUND");
+        status.textContent = "🎉 Marker Hiro ditemukan!";
+        status.classList.remove("text-slate-800");
+        status.classList.add("text-green-700");
+    });
 
-            },
-            1500
-        );
+    /* MARKER LOST */
+    marker.addEventListener("markerLost", function() {
+        status.textContent = "📷 Arahkan ke marker Hiro";
+        status.classList.remove("text-green-700");
+        status.classList.add("text-slate-800");
+    });
 
-    }
-);
-
-
-
-/* ======================================================
-   CLOSE
-======================================================= */
-
-closeButton.addEventListener(
-    "click",
-    function() {
-
-        arControl.classList.remove(
-            "active"
-        );
-
-        home.style.display =
-            "block";
-
-    }
-);
-
-
-
-/* ======================================================
-   MARKER FOUND
-======================================================= */
-
-marker.addEventListener(
-    "markerFound",
-    function() {
-
-        console.log(
-            "HIRO FOUND"
-        );
-
-
-        status.textContent =
-            "🎉 Marker Hiro ditemukan!";
-
-
-        status.classList.remove(
-            "text-slate-800"
-        );
-
-        status.classList.add(
-            "text-green-700"
-        );
-
-    }
-);
-
-
-
-/* ======================================================
-   MARKER LOST
-======================================================= */
-
-marker.addEventListener(
-    "markerLost",
-    function() {
-
-        status.textContent =
-            "📷 Arahkan ke marker Hiro";
-
-
-        status.classList.remove(
-            "text-green-700"
-        );
-
-        status.classList.add(
-            "text-slate-800"
-        );
-
-    }
-);
-
-
-
-/* ======================================================
-   SCENE LOADED
-======================================================= */
-
-document
-    .getElementById("ar-scene")
-    .addEventListener(
-        "loaded",
-        function() {
-
-            console.log(
-                "A-Frame berhasil dimuat."
-            );
-
-        }
-    );
-
-
-
-/* ======================================================
-   CAMERA INIT
-======================================================= */
-
-window.addEventListener(
-    "camera-init",
-    function(event) {
-
-        console.log(
-            "CAMERA INIT",
-            event
-        );
-
-    }
-);
-
-
-
-/* ======================================================
-   CAMERA ERROR
-======================================================= */
-
-window.addEventListener(
-    "camera-error",
-    function(event) {
-
-        console.error(
-            "CAMERA ERROR",
-            event
-        );
-
-
-        loading.classList.remove(
-            "active"
-        );
-
-    }
-);
-
-
-
-/* ======================================================
-   DEBUG
-======================================================= */
-
-window.addEventListener(
-    "load",
-    function() {
-
-        console.log(
-            "=============================="
-        );
-
-        console.log(
-            "AR EDUKASI ANAK"
-        );
-
-        console.log(
-            "URL:",
-            location.href
-        );
-
-        console.log(
-            "HTTPS:",
-            location.protocol === "https:"
-        );
-
-        console.log(
-            "=============================="
-        );
-
-    }
-);
-
-
+    /* CAMERA ERROR HANDLER */
+    window.addEventListener("camera-error", function(event) {
+        console.error("CAMERA ERROR", event);
+        loading.classList.remove("active");
+        alert("Gagal memuat kamera. Pastikan browser sudah diizinkan mengakses kamera.");
+    });
 </script>
 
-
 </body>
-
 </html>
